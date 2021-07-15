@@ -2,32 +2,32 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js" integrity="sha512-OZ6CXzl5JrSc9OM1lxp1OC+zt5gCTVAqy7nWwbdSUE98akAvGl/20WaIqsRUnSpBG+QBkcMkiJVfFvybZ6PtKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script type="text/javascript">
 
-function NewtonRaphson(f, tolerance, iterations, epsilon = 1e-14) {
-  this.f          = math.parse(f);
-  this.fPrime     = math.derivative(f, "x");
-  this.tolerance  = math.parse(tolerance);
-  this.iterations = math.parse(iterations);
-  this.epsilon    = math.parse(epsilon);
+  function NewtonRaphson(f, tolerance, iterations, epsilon = 1e-14) {
+    this.f          = math.parse(f);
+    this.fPrime     = math.derivative(f, "x");
+    this.tolerance  = math.parse(tolerance);
+    this.iterations = math.parse(iterations);
+    this.epsilon    = math.parse(epsilon);
 
-  this.calculate = function(x0, iteration = 1) {
-    if (iteration > this.iterations)
-      throw new Error("Max iteration count reached");
+    this.calculate = function(x0, iteration = 1) {
+      if (iteration > this.iterations)
+        throw new Error("Max iteration count reached");
     
-    var y      = this.f.evaluate({"x": x0});
-    var yPrime = this.fPrime.evaluate({"x": x0});
+      var y      = this.f.evaluate({"x": x0});
+      var yPrime = this.fPrime.evaluate({"x": x0});
 
-    if (Math.abs(yPrime) < this.epsilon) 
-      throw new Error("Denominator too small");
+      if (Math.abs(yPrime) < this.epsilon) 
+        throw new Error("Denominator too small");
 
-    var x1 = x0 - y / yPrime;
+      var x1 = x0 - y / yPrime;
 
-    if (Math.abs(x1 - x0) <= this.tolerance) return x0;
+      if (Math.abs(x1 - x0) <= this.tolerance) return x0;
 
-    console.log("iteration " + iteration + " complete with result " + x0);
+      console.log("iteration " + iteration + " complete with result " + x0);
 
-    return this.calculate(x1, iteration + 1);
+      return this.calculate(x1, iteration + 1);
+    }
   }
-}
 
   var calculateClick = function() {
     var x0         = document.getElementById("x0").value;
