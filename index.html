@@ -1,0 +1,69 @@
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js" integrity="sha512-OZ6CXzl5JrSc9OM1lxp1OC+zt5gCTVAqy7nWwbdSUE98akAvGl/20WaIqsRUnSpBG+QBkcMkiJVfFvybZ6PtKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="text/javascript">
+
+function NewtonRaphson(f, tolerance, iterations, epsilon = 1e-14) {
+  this.f          = math.parse(f);
+  this.fPrime     = math.derivative(f, "x");
+  this.tolerance  = math.parse(tolerance);
+  this.iterations = math.parse(iterations);
+  this.epsilon    = math.parse(epsilon);
+
+  this.calculate = function(x0, iteration = 1) {
+    if (iteration > this.iterations)
+      throw new Error("Max iteration count reached");
+    
+    var y      = this.f.evaluate({"x": x0});
+    var yPrime = this.fPrime.evaluate({"x": x0});
+
+    if (Math.abs(yPrime) < this.epsilon) 
+      throw new Error("Denominator too small");
+
+    var x1 = x0 - y / yPrime;
+
+    if (Math.abs(x1 - x0) <= this.tolerance) return x0;
+
+    console.log("iteration " + iteration + " complete with result " + x0);
+
+    return this.calculate(x1, iteration + 1);
+  }
+}
+
+  var calculateClick = function() {
+    var x0         = document.getElementById("x0").value;
+    var f          = document.getElementById("f").value;
+    var tolerance  = document.getElementById("tolerance").value;
+    var iterations = document.getElementById("iterations").value;
+
+    try {
+      var nr = new NewtonRaphson(f, tolerance, iterations);
+      document.getElementById("fPrime").value = nr.fPrime.toString();
+
+      var result = nr.calculate(x0);
+    } catch (e) {
+      var result = e;
+    }
+
+    alert(result);
+    return false;
+  }
+
+</script>
+
+<title>Newton Raspberry Method</title>
+<style>
+label { width: 105px; display: inline-block; text-align: right; padding: 5px; }
+input { width: 150px; }
+button { width: 260px; padding: 7px; margin: 5px; }
+</style>
+<body>
+<form onSubmit="return false;">
+  <label>x0:</label><input type=text value="1" id="x0" onclick=this.select()></input><br>
+  <label>f(x) = </label><input type=text value="x ^ 2 - 2" id="f" onclick=this.select()></input><br>
+  <label>f'(x) = </label><input disabled=true type=text value="2 * x" id="fPrime" onclick=this.select()></input><br>
+  <label>Tolerance:</label><input type=text value="1e-7" id="tolerance" onclick=this.select()></input><br>
+  <label>Max Iterations:</label><input type=text value="100" id="iterations" onclick=this.select()></input><br>
+  <button type=submit onclick=calculateClick()>Calculate</button>
+</form>
+</body>
+</html>
