@@ -1,69 +1,76 @@
 <html>
+<link rel=stylesheet href="styles/style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js" integrity="sha512-OZ6CXzl5JrSc9OM1lxp1OC+zt5gCTVAqy7nWwbdSUE98akAvGl/20WaIqsRUnSpBG+QBkcMkiJVfFvybZ6PtKQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js" integrity="sha512-5vwN8yor2fFT9pgPS9p9R7AszYaNn0LkQElTXIsZFCL7ucT8zDCAqlQXDdaqgA1mZP47hdvztBMsIoFxq/FyyQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="scripts/script.js"></script>
 <script type="text/javascript">
 
-  function NewtonRaphson(f, tolerance, iterations, epsilon = 1e-14) {
-    this.f          = math.parse(f);
-    this.fPrime     = math.derivative(f, "x");
-    this.tolerance  = math.parse(tolerance);
-    this.iterations = math.parse(iterations);
-    this.epsilon    = math.parse(epsilon);
+var calculateClick = function() {
+	var x0 = 1
+	var f  = document.getElementById("f").value;
 
-    this.calculate = function(x0, iteration = 1) {
-      if (iteration > this.iterations)
-        throw new Error("Max iteration count reached");
-    
-      var y      = this.f.evaluate({"x": x0});
-      var yPrime = this.fPrime.evaluate({"x": x0});
+	try {
+		var nr = new NewtonRaphson(f);
+		document.getElementById("f").value = nr.f.toString();
+		document.getElementById("fPrime").value = nr.fPrime.toString();
 
-      if (Math.abs(yPrime) < this.epsilon) 
-        throw new Error("Denominator too small");
+		var data = {
+			labels: [],
+			datasets: [{
+				label: nr.f.toString(),
+				borderColor: "rgba(75, 192, 192, 1)",
+				data: [],
+				fill: false
+			}, {
+				label: nr.fPrime.toString(),
+				borderColor: "rgba(153, 102, 255, 1)",
+				data: [],
+				fill: false
+			}]
+		};
 
-      var x1 = x0 - y / yPrime;
+		var result = nr.calculate(x0);
 
-      if (Math.abs(x1 - x0) <= this.tolerance) return x0;
+		for (var i = -1; i <=1; i += 0.1)
+			data.labels.push(Math.round((result + i) * 1000.0) / 1000.0)
 
-      console.log("iteration " + iteration + " complete with result " + x0);
+			for (var i = 0; i < data.labels.length; i++) {
+				data.datasets[0].data.push(nr.f.evaluate({"x": data.labels[i]}));
+				data.datasets[1].data.push(nr.fPrime.evaluate({"x": data.labels[i]}));
+			};
 
-      return this.calculate(x1, iteration + 1);
-    }
-  }
+			chart.data = data;
+			chart.update()
 
-  var calculateClick = function() {
-    var x0         = document.getElementById("x0").value;
-    var f          = document.getElementById("f").value;
-    var tolerance  = document.getElementById("tolerance").value;
-    var iterations = document.getElementById("iterations").value;
+	} catch (e) {
+		alert(e)
+	}
 
-    try {
-      var nr = new NewtonRaphson(f, tolerance, iterations);
-      document.getElementById("fPrime").value = nr.fPrime.toString();
-
-      var result = nr.calculate(x0);
-    } catch (e) {
-      var result = e;
-    }
-
-    alert(result);
-    return false;
-  }
-
+	return false;
+};
 </script>
-
 <title>Newton Raspberry Method</title>
-<style>
-label { width: 105px; display: inline-block; text-align: right; padding: 5px; }
-input { width: 150px; }
-button { width: 260px; padding: 7px; margin: 5px; }
-</style>
 <body>
-<form onSubmit="return false;">
-  <label>x0:</label><input type=text value="1" id="x0" onclick=this.select()></input><br>
-  <label>f(x) = </label><input type=text value="x ^ 2 - 2" id="f" onclick=this.select()></input><br>
-  <label>f'(x) = </label><input disabled=true type=text value="2 * x" id="fPrime" onclick=this.select()></input><br>
-  <label>Tolerance:</label><input type=text value="1e-7" id="tolerance" onclick=this.select()></input><br>
-  <label>Max Iterations:</label><input type=text value="100" id="iterations" onclick=this.select()></input><br>
-  <button type=submit onclick=calculateClick()>Calculate</button>
-</form>
+  <div class="header">
+		<div class="center">
+			<input type="text" id="f" autocomplete="off" value="x^2"></input><input type="text" id="fPrime" autocomplete="off" value=""></input><a href="#" class="btn" onclick="calculateClick()">Submit</a>
+		</div>
+	</div>
+	<div id="content"><canvas id="chart"></canvas></div>
 </body>
+<script type="text/javascript">
+var chart = new Chart(document.getElementById("chart"), {
+	type: 'line',
+	data: {},
+	options: {
+		scales: {
+			yAxes: {
+				grid: {
+					color: function(context) { if (context.tick.value == 0) return "white"; }
+				}
+			}
+		}
+	}
+});
+</script>
 </html>
